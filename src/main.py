@@ -195,6 +195,9 @@ if __name__ == "__main__":
         cimg = get_traffic_light(frame[r[1] : r[1] + r[3], r[0] : r[0] + r[2]])
         end = time()
         times.append(end - start)
+
+        # Change original frame to cimg
+        frame[r[1] : r[1] + r[3], r[0] : r[0] + r[2]] = cimg
         cv2.imshow("img", frame)
         cv2.imshow("cimg", cimg)
 

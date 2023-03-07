@@ -9,11 +9,15 @@ import cv2
 import numpy as np
 
 
-def get_traffic_light(img: np.ndarray) -> np.ndarray:
+def get_traffic_light(img: np.ndarray, r: int = 5, bound: float = 1.0) -> np.ndarray:
     """
     get traffic light from image
+
     Args:
         img: cv2 image
+        r: radius of circle to detect
+        bound: ratio of detect bound, height / width
+
     Returns:
         cimg: cv2 image with traffic light
     """
@@ -46,7 +50,6 @@ def get_traffic_light(img: np.ndarray) -> np.ndarray:
     )
 
     size = img.shape
-    # print size
 
     # hough circle detect
     r_circles = cv2.HoughCircles(
@@ -83,8 +86,6 @@ def get_traffic_light(img: np.ndarray) -> np.ndarray:
     )
 
     # traffic light detect
-    r = 10
-    bound = 1
     if r_circles is not None:
         r_circles = np.uint16(np.around(r_circles))
 
@@ -153,7 +154,7 @@ def get_traffic_light(img: np.ndarray) -> np.ndarray:
 
 
 if __name__ == "__main__":
-    from time import time
+    from time import time, sleep
 
     # path = os.path.abspath("..") + "/light/"
     #
@@ -203,6 +204,9 @@ if __name__ == "__main__":
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
+
+        # fps : 30
+        # sleep(1 / 24 - (end - start))
 
     print(f"Average time: {sum(times) / len(times) * 1000:.2f}ms")
     print(f"Max time: {max(times) * 1000:.2f}ms")

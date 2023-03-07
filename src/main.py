@@ -9,10 +9,16 @@ import cv2
 import numpy as np
 
 
-def detect(filepath, file):
+def get_traffic_light(img: np.ndarray) -> np.ndarray:
+    """
+    get traffic light from image
+    Args:
+        img: cv2 image
+    Returns:
+        cimg: cv2 image with traffic light
+    """
     font = cv2.FONT_HERSHEY_SIMPLEX
-    img = cv2.imread(filepath + file)
-    cimg = img
+    cimg = img.copy()
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # color range
@@ -77,8 +83,8 @@ def detect(filepath, file):
     )
 
     # traffic light detect
-    r = 5
-    bound = 4.0 / 10
+    r = 10
+    bound = 1
     if r_circles is not None:
         r_circles = np.uint16(np.around(r_circles))
 
@@ -142,20 +148,60 @@ def detect(filepath, file):
     # cv2.imshow("maskr", maskr)
     # cv2.imshow("maskg", maskg)
     # cv2.imshow("masky", masky)
-    cv2.imshow("cimg", cimg)
 
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    return cimg
 
 
 if __name__ == "__main__":
-    path = os.path.abspath("..") + "//light//"
-    for f in os.listdir(path):
-        print(f)
-        if (
-            f.endswith(".jpg")
-            or f.endswith(".JPG")
-            or f.endswith(".png")
-            or f.endswith(".PNG")
-        ):
-            detect(path, f)
+    from time import time
+
+    # path = os.path.abspath("..") + "/light/"
+    #
+    # for f in os.listdir(path):
+    #     print(f)
+    #     if (
+    #         f.endswith(".jpg")
+    #         or f.endswith(".JPG")
+    #         or f.endswith(".png")
+    #         or f.endswith(".PNG")
+    #     ):
+    #         img = cv2.imread(path + f)
+    #         start = time()
+    #         cimg = get_traffic_light(img)
+    #         end = time()
+    #         img_h, img_w, _ = img.shape
+    #         print(f"Image Size: {(img_w, img_h)}, time: {(end - start) * 1000:.2f}ms")
+    #         cv2.imshow("img", img)
+    #         cv2.imshow("cimg", cimg)
+    #         cv2.waitKey(0)
+    #         cv2.destroyAllWindows()
+
+    paths = os.listdir("../vids/")
+    for i, p in enumerate(paths):
+        print(f"[{i}] {p}")
+    path = paths[int(input("Choose a video: "))]
+
+    cap = cv2.VideoCapture("../vids/" + path)
+    r = cv2.selectROI("ROI", cap.read()[1])
+    cv2.destroyWindow("ROI")
+
+    times = []
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        start = time()
+        cimg = get_traffic_light(frame[r[1] : r[1] + r[3], r[0] : r[0] + r[2]])
+        end = time()
+        times.append(end - start)
+        cv2.imshow("img", frame)
+        cv2.imshow("cimg", cimg)
+
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
+
+    print(f"Average time: {sum(times) / len(times) * 1000:.2f}ms")
+    print(f"Max time: {max(times) * 1000:.2f}ms")
+    print(f"Min time: {min(times) * 1000:.2f}ms")
+    print(f"ROI size: {r[3]}x{r[2]}")
